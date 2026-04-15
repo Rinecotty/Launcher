@@ -9,18 +9,18 @@ Select::Select()
 	, isAnim(false)
 	, prevPos (0,0)
 	, prevDistance(350)
+	, prevCnt(3)
+	, animDuration(0.5)
+	, next(Direction::none)
+	, nowPos(0, 0)
+	, targetPos(0,0)
 {
-	
+	prevArea.resize(prevCnt + 2);//上の部分と下の部分も入れる.
 }
 Select::~Select()
 {
-	/*for (int i = 0; i < games.size(); i++) {
-		games[i].texture.release();
-		games[i].mov.release();
-		games[i].movAudio.release();
-	}*/
 	audio.stop();
-	games.clear();
+	games.clear();//ゲームのリストをクリア.
 }
 void Select::Initialize() {
 	SelectInit();
@@ -155,6 +155,7 @@ void Select::Update() {
 
 		if (t >= 1.0) {
 			isAnim = false;
+			prevPos.y = nowPos.y;
 			UpdateIndex(next);
 			LoadPrev();
 			t_input.start();
@@ -171,55 +172,25 @@ void Select::LoadPrev() {
 	if (audio) {
 		audio.stop();
 		audio = Audio();
-		//audio.release();
 	}										//もし音声を再生中ならストップ.
 	//if (mov)mov.release();
-	mov = VideoTexture();
+	mov = VideoTexture();								//もし動画を再生中ならリリース.
 
-	if (!games[selectIndex].texture) {
-		prevImage = noImage;
-	}
-	else {
-		prevImage = games[selectIndex].texture;	//Preview.
+	//プレビューエリアテクスチャー読み込み.
+	for (int i = 0; i < prevArea.size(); i++) {
+		int32 index = (games.size() + selectIndex + (i - 2)) % games.size();
+		if (!games[index].texture) {
+			prevArea[i] = noImage;
+		}
+		else {
+			prevArea[i] = games[index].texture;
+		}
 	}
 
-	//selectIndexがゲーム配列サイズちょうどなら.
-	if (selectIndex == (int32)games.size() - 1) {
-		if (!games[0].texture) {
-			prev2 = noImage;
-		}
-		else prev2 = games[0].texture;
-		if (!games[selectIndex - 1].texture) {
-			prev3 = noImage;
-		}else prev3 = games[selectIndex - 1].texture;
-		Print << U"size-1";
-	}
-	//selectIndexが0なら.
-	else if (selectIndex == 0) {
-		if (!games[games.size() - 1].texture) {
-			prev2 = noImage;
-		}
-		else prev2 = games[games.size() - 1].texture;
-		if (!games[selectIndex + 1].texture) {
-			prev3 = noImage;
-		}
-		else prev3 = games[selectIndex + 1].texture;
-	}
-	//selectIndexがそれ以外なら.
-	else {
-		if (!games[selectIndex - 1].texture) {
-			prev2 = noImage;
-		}
-		else prev2 = games[selectIndex - 1].texture;
-		if (!games[selectIndex + 1].texture) {
-			prev3 = noImage;
-		}
-		else prev3 = games[selectIndex + 1].texture;
-		Print << U"LoadPrev:else";
-	}
 	mov = games[selectIndex].mov;						//動画.
 	audio = games[selectIndex].movAudio;			//音声.
 	//音声または動画が見つからなかったら抜ける.
+
 	if (!mov || !audio) {
 		return;
 	}
@@ -227,9 +198,9 @@ void Select::LoadPrev() {
 }
 
 void Select::DrawPrev() {
-	prevImage.fitted(300 * SCALE,300 * SCALE).rounded(40).drawAt(prevPos.x * SCALE, prevPos.y * SCALE);//600
-	prev2.fitted(300 * SCALE, 300 * SCALE).rounded(40).drawAt(prevPos.x * SCALE, (prevPos.y - prevDistance) * SCALE);//250
-	prev3.fitted(300 * SCALE, 300 * SCALE).rounded(40).drawAt(500 * SCALE, (prevPos.y + prevDistance) * SCALE);//500
+	for (int i = 0; i < prevArea.size(); i++) {
+		prevArea[i].fitted(300 * SCALE, 300 * SCALE).rounded(40).drawAt(prevPos.x * SCALE, (prevPos.y + prevDistance * (i - 2)) * SCALE);
+	}
 	PlayMov();//動画を再生.
 }
 
@@ -241,10 +212,10 @@ void Select::Anim(Direction dir, double sec) {
 		t_prev.restart();
 		animDuration = sec;
 		if (dir == Direction::up) {
-			targetPos = { prevPos.x, prevPos.y - 350 };
+			targetPos = { prevPos.x, prevPos.y + 350 };
 		}
 		else {
-			targetPos = { prevPos.x, prevPos.y + 350 };
+			targetPos = { prevPos.x, prevPos.y - 350 };
 		}
 	}
 }

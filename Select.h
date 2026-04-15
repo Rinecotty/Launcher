@@ -27,22 +27,21 @@ private:
 		up,
 		down,
 		left,
-		right
+		right,
+		none
 	};
 	FontMgr& fontMgr = FontMgr::GetInstance();
 	const FilePath homeDirectory = FileSystem::CurrentDirectory();//ホームディレクトリ格納.
 	Texture noImage;
-	Texture prevImage;
-	Texture prev2;
-	Texture prev3;
 	Array<Texture> prevArea;
+	int32 prevCnt;//プレビューエリアの数.
 	Vec2 prevPos;//プレビューアイコンの一番上の座標.
 	int prevDistance;//プレビューアイコンの間の距離.
 	Stopwatch t_prev;//プレビューアイコン用タイマー.
 	Vec2 nowPos;//今の位置記録.
-	Vec2 targetPos;
-	Direction next;
-	double animDuration;
+	Vec2 targetPos;//アニメーションの目標位置記録.
+	Direction next;//セレクトアニメーション方向保持.
+	double animDuration;//セレクトアニメーション遷移時間.
 
 	int32 selectIndex = 0;	//選択しているタイルのインデックス.
 
