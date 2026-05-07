@@ -159,6 +159,12 @@
     <ClCompile Include="FontMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Back.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="App\icon.ico">
@@ -849,6 +855,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Tab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Back.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

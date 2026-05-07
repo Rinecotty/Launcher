@@ -4,7 +4,12 @@ Select::Select()
 	: selectIndex (0)
 	, canInput(true)
 	, isPlay(false)
+	, leave(false)
 	, descArea{}
+	, titleArea{}
+	, staffArea{}
+	, toolArea{}
+	, yearArea{}
 	, movscale(1)
 	, isAnim(false)
 	, prevPos (0,0)
@@ -32,6 +37,7 @@ void Select::Initialize() {
 	SelectInit();
 }
 void Select::SelectInit() {
+	leaveTime.Start();
 	prevPos = Vec2(150, 600);//プレビューエリアの座標代入.
 	movPos = Vec2(750, 100);//動画の表示位置代入.
 	movSize = Vec2(1200, 675);//動画の表示サイズ代入.
@@ -42,44 +48,51 @@ void Select::SelectInit() {
 	SetRectSize();
 }
 void Select::InitGenre() {
-	for (int i = 0; i < games.size(); i++) {
-		if (games[i].genre.isEmpty())continue;//ジャンルが空ならスキップ.
-		bool add = true;
-		for (int n = 0; n < items.size(); n++) {
-			if (games[i].genre == items[n]) {
-				add = false;
-				break;
+	for (const auto& game : games) {
+		if (game.genre.isEmpty()) continue;//ジャンルが空ならスキップ.
+
+		Array<String> gameGenres = game.genre.split(U',');//ジャンルが複数ある場合は分割して配列に入れる.
+
+		for (auto& g : gameGenres) {
+			g = g.trimmed();//前後の空白を削除.
+			if (!items.contains(g)) {
+				items << g;
 			}
 		}
-		if (add) {
-			items << games[i].genre;
-		}
 	}
-	
 }
 void Select::InitYear() {
-	for (int i = 0; i < games.size(); i++) {
-		if (games[i].year== 0)continue;//年度が空ならスキップ.
-		bool add = true;
-		for (int n = 0; n < years.size(); n++) {
-			if (games[i].year == years[n]) {
-				add = false;
-				break;
-			}
-		}
-		if (add) {
-			years << games[i].year;
-			items << Format(U"{}年"_fmt(games[i].year));
+	for (const auto& game : games) {
+		if (game.year.empty()) continue;//年度が空ならスキップ.
+		if (!years.contains(game.year + U"年")) {
+			years << game.year + U"年";
 		}
 	}
-	
+	//for (int i = 0; i < games.size(); i++) {
+	//	if (games[i].year== 0)continue;//年度が空ならスキップ.
+	//	bool add = true;
+	//	for (int n = 0; n < years.size(); n++) {
+	//		if (games[i].year == years[n]) {
+	//			add = false;
+	//			break;
+	//		}
+	//	}
+	//	if (add) {
+	//		years << games[i].year;
+	//		items << Format(U"{}年"_fmt(games[i].year));
+	//	}
+	//}
+	//
 }
 void Select::Load() {
+#if _DEBUG
 	Print << homeDirectory;
+#endif
 	const FilePath noImgPath = U"data/image/NoImage.png";
 	noImage = Texture{ noImgPath };//動画等が無かった時の画像読み込み.	
 	LoadGames();//ゲーム読み込み.
 	items << U"All";
+	years << U"All";
 	InitGenre();//ジャンルの初期化.
 	InitYear();//年度の初期化.
 	tab = TabE{ Size{ 160, 50 }, items};
@@ -94,6 +107,7 @@ void Select::LoadSortGames() {
 		nowGameList = &selectedGames;//今使っているゲームリストのポインタを更新.
 	}
 	selectIndex = 0;//選択しているゲームのインデックスを初期化.
+	LoadPrev();
 }
 //ゲームのパスがWebページかどうか.
 bool Select::IsURL(StringView path) {
@@ -124,9 +138,6 @@ Array<Game> Select::LoadGames() {
 			tmp.write(U"Game", U"staff", U"ゲーム制作スタッフ");
 			tmp.write(U"Game", U"tools", U"制作に使ったツール");
 			tmp.write(U"Game", U"genre", U"ジャンル");
-			tmp.write(U"Game", U"mouse", U"マウス操作 ; true または false");
-			tmp.write(U"Game", U"keyboard", U"キーボード操作 ; true または false");
-			tmp.write(U"Game", U"gamepad", U"ゲームパッド操作 ; true または false");
 			tmp.write(U"Game", U"priority", U"ランチャーでの表示優先度（大きいほど一覧で先頭に表示） ; 整数値");
 			tmp.write(U"Game", U"path", U"ゲームのexe名");
 			tmp.write(U"Game", U"year", U"制作年度.西暦で書くこと(例：2026)");
@@ -150,15 +161,12 @@ Array<Game> Select::LoadGames() {
 		game.staff = ini[U"Game.staff"];
 		game.tools = ini[U"Game.tools"];
 		game.genre = ini.get<String>(U"Game.genre");
-		game.useMouse = ini.get<bool>(U"Game.mouse");
-		game.useKeyboard = ini.get<bool>(U"Game.keyboard");
-		game.useGamepad = ini.get<bool>(U"Game.gamepad");
 		game.priority = ini.get<int32>(U"Game.priority");
 
 		const String path = game.path = ini[U"Game.path"];
 		game.isWebApp = IsURL(path);
 		game.path = (game.isWebApp ? path : (gameDirectory + path));
-		game.year = ParseOr<int32>(ini[U"Game.year"], 0);//文字列の変換に失敗したら0を入れる.
+		game.year = ini.get<String>(U"Game.year");
 		// ゲームのリストに追加
 		games << game;
 		nowGameList = &games;
@@ -168,7 +176,18 @@ Array<Game> Select::LoadGames() {
 	return games.sort_by([](const Game& a, const Game& b) { return a.priority > b.priority; });
 }
 void Select::Update() {
-	if (KeyEnter.down()) {
+	input.Update();
+	const Array<Input> keys = Keyboard::GetAllInputs();
+	//何らかの入力があったら.
+	if (!keys.isEmpty()) {
+		leaveTime.Reset();//放置時間リセット.
+		if (leave) {
+			RestoreAudio();
+		}
+	}
+	Leave();
+
+	if (input.IsPressed(Action::Decide)) {
 		PlayGame();
 	}
 	if (process)
@@ -199,25 +218,32 @@ void Select::Update() {
 			canInput = true;
 		}
 	}
-	if (KeyUp.down() && canInput) {
+	if (input.IsPressed(Action::Up) && canInput) {
 		canInput = false;
 		Anim(Direction::up, 0.5);
 		next = Direction::up;
 	}
-	if (KeyDown.down() && canInput) {
+	if (input.IsPressed(Action::Down) && canInput) {
 		canInput = false;
 		Anim(Direction::down, 0.5);
 		next = Direction::down;
 	}
-	if (KeyLeft.down())
+	if (input.IsPressed(Action::Left))
 	{
 		tab.advance(-1);
 		LoadSortGames();
 	}
-	else if (KeyRight.down())
+	if (input.IsPressed(Action::Right))
 	{
 		tab.advance(+1);
 		LoadSortGames();
+	}
+	if (input.IsPressed(Action::Sort)) {
+		yearIndex = (yearIndex + 1) % years.size();
+#if _DEBUG
+		Print << U"yearIndex = " << yearIndex;
+#endif
+
 	}
 	if (isAnim) {
 		double t = Min(t_prev.sF(), animDuration) / animDuration;
@@ -235,14 +261,17 @@ void Select::Update() {
 	}
 }
 void Select::Draw() {
+	//yearArea.rounded(40, 40, 40, 40).draw();
 	tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
-	DrawPrev();//プレビューを表示.
 	descArea.rounded(40, 0, 40, 0).draw();
-	fontMgr.GetFont()((*nowGameList)[selectIndex].desc).draw(descArea.stretched(-80, -30, -20, -30), Palette::Black);
+	titleArea.rounded(40, 40, 40, 40).draw();
+	staffArea.rounded(40, 40, 40, 40).draw();
+	toolArea.rounded(40, 40, 40, 40).draw();
+	fontMgr.GetFont()((*nowGameList)[selectIndex].desc).draw(descArea.stretched(-80 * SCALE, -30 * SCALE, -20 * SCALE, -30 * SCALE), Palette::Black);
+	DrawPrev();//プレビューを表示.
 	//Print << items;
 }
 void Select::LoadPrev() {
-	Print << (*nowGameList).size();
 	if (audio) {
 		audio.stop();
 		audio = Audio();
@@ -252,7 +281,7 @@ void Select::LoadPrev() {
 
 	//プレビューエリアテクスチャー読み込み.
 	for (int i = 0; i < prevArea.size(); i++) {
-		int32 index = (int32)((*nowGameList).size() + selectIndex + (i - 2)) % (*nowGameList).size();
+		int32 index = (int32)((*nowGameList).size() + selectIndex + (i - 3)) % (*nowGameList).size();
 		if (!(*nowGameList)[index].texture) {
 			prevArea[i] = noImage;
 		}
@@ -278,6 +307,12 @@ void Select::DrawPrev() {
 		int offset = i - center;
 		prevArea[i].fitted(prevSize * SCALE, prevSize * SCALE).rounded(40).drawAt(prevPos.x * SCALE, (prevPos.y + offset * prevDistance ) * SCALE);
 	}
+	fontMgr.GetFont()(U"タイトル").draw(titleArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont()(U"制作メンバー").draw(staffArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont()(U"制作ツール").draw(toolArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont()((*nowGameList)[selectIndex].title).draw(titleArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont()((*nowGameList)[selectIndex].staff).draw(staffArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont()((*nowGameList)[selectIndex].tools).draw(toolArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	PlayMov();//動画を再生.
 }
 
@@ -330,9 +365,11 @@ void Select::PlayMov() {
 	//音声の再生位置.
 	const double audioTime = audio.posSec();
 	//再生位置（秒）/　動画の長さ（秒）
+#if _DEBUG
 	Print << U"{:.2f}/{:.2f}"_fmt(mov.posSec(), mov.lengthSec());
 	Print << mov.size().x;
 	Print << mov.size().y;
+#endif
 	//動画の再生位置と音声の再生位置の差が0.1秒以上ある場合
 	if (0.1 < AbsDiff(audioTime, videoTime)) {
 		audio.seekTime(videoTime);
@@ -344,33 +381,83 @@ void Select::PlayMov() {
 	mov.fitted(movSize.x,movSize.y).draw(movPos.x * SCALE,movPos.y * SCALE);
 }
 void Select::SetRectSize() {
+	int32 firstY = 200;
+	int32 w = 450;
+	int32 h = 180;
 	descArea = RectF{ descPos.x * SCALE,descPos.y * SCALE,descSize.x * SCALE,descSize.y* SCALE };
+	titleArea = RectF{ 275 * SCALE,firstY * SCALE,w * SCALE,h* SCALE };
+	staffArea = RectF{ 275 * SCALE,(firstY + 200) * SCALE,w * SCALE,h * SCALE };
+	toolArea = RectF{ 275 * SCALE,(firstY + 400) * SCALE,w * SCALE,h * SCALE };
+	yearArea = RectF{ 10 * SCALE,10 * SCALE,300 * SCALE,200 * SCALE };
 }
 void Select::PlayGame() {
-	process = ChildProcess{ (*nowGameList)[selectIndex].path };
-	audio.stop();
-	mov.reset();
+	if (FileSystem::Exists((*nowGameList)[selectIndex].path)) {
+		process = ChildProcess{ (*nowGameList)[selectIndex].path };
+		audio.stop();
+		mov.reset();
+
+	}
 }
 
 Array<Game> Select::SortGames(Array<Game> gameList,String moji) {
 	Array<Game> result;
-	//年度での検索を試みる(最初に数字があるかどうかしか見てない).
-	try {
-		String yearStr = moji.remove(U"年");
-		int32 num = Parse<int32>(yearStr);
-		for (int i = 0; i < games.size(); i++) {
-			if (games[i].year == num) {
-				result << games[i];
-			}
+	for (const auto& game : games) {
+		//ジャンル検索.
+		if (game.genre.contains(moji)) {
+			result << game;
 		}
 	}
-	//数字がなかったらジャンル検索する.
-	catch(const ParseError& error){
-		for (int i = 0; i < games.size(); i++) {
-			if (games[i].genre.contains(moji)) {
-				result << games[i];
-			}
-		}
-	}
+	////年度での検索を試みる(最初に数字があるかどうかしか見てない).
+	//try {
+	//	String yearStr = moji.remove(U"年");
+	//	int32 num = Parse<int32>(yearStr);
+	//	for (int i = 0; i < games.size(); i++) {
+	//		if (games[i].year == num) {
+	//			result << games[i];
+	//		}
+	//	}
+	//}
+	////数字がなかったらジャンル検索する.
+	//catch(const ParseError& error){
+	//	for (int i = 0; i < games.size(); i++) {
+	//		if (games[i].genre.contains(moji)) {
+	//			result << games[i];
+	//		}
+	//	}
+	//}
 	return result;
+}
+void Select::Leave() {
+	//if (leave)return;//すでに放置中なら何もしない.
+	uint64 tmpTime = leaveTime.GetPassTime();//経過時間取得.
+	//１分経ったらかつ放置してないなら.
+	if (tmpTime > 60000000 && !leave) {
+		//音楽止める.
+		audio.stop();
+		leave = true;
+	}
+	//3分経ったらかつプロセスが実行中なら.
+	if (tmpTime > 60000000) {
+		if (process) {
+			process->terminate();//ゲームを強制終了.
+			process.reset();
+			RestoreWindow();
+		}
+	}
+}
+void Select::RestoreWindow() {
+	//windowが最小化されていたら復帰.
+	if (Window::GetState().minimized) {
+		Window::Restore();
+		isPlay = false;
+	}
+	leave = true;
+}
+void Select::RestoreAudio() {
+	//動画再生中なら音声の時間を合わせて復帰.
+	if (mov) {
+		audio.seekTime(mov.posSec());
+		audio.play();
+		leave = false;
+	}
 }

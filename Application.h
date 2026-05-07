@@ -16,15 +16,17 @@
 
 namespace UI {
 	inline Size WindowSize{ 1920,1200 };//ウィンドウサイズ.
-	constexpr bool Frameless = false;//ウィンドウのフレーム表示するか.
+	inline bool FullScreen = true;//フルスクリーンかどうか.
+	inline bool Frameless = false;//ウィンドウのフレーム表示するか.
 }
 
 //アプリケーション設定用のクラス.
 class App {
 private:
 	ColorF back{ 0.13, 0.2, 0.46 };//背景色.
-	App(){}
+	App();
 	~App(){}
+	bool isFullScreen;
 public:
 	static App& GetInstance();
 	void LoadAppInfo();

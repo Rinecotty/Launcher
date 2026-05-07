@@ -4,9 +4,13 @@
 void MyTimer::Init() {
 	startTime = 0;
 }
+void MyTimer::Reset() {
+	startTime = Time::GetMicrosec();
+}
 void MyTimer::Start() {
 	startTime = Time::GetMicrosec();
 }
+
 uint64 MyTimer::GetPassTime() {
 	passTime =  Time::GetMicrosec() - startTime;
 	return passTime;

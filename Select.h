@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "FontMgr.h"
 #include "Tab.h"
+#include "timer.h"
+#include "MyInput.h"
 //ゲーム情報入れる構造体.
 struct Game {
 	String title;							//ゲームのタイトル.
@@ -15,7 +17,7 @@ struct Game {
 	String staff;						//ゲームの開発スタッフ.
 	String tools;						//ゲームの開発ツール.
 	String genre;						//ゲームのジャンル.
-	int32 year;							//ゲーム制作年度.2026や2025など.
+	String year;							//ゲーム制作年度.2026や2025など.
 	bool useMouse = false;		//マウスを使用するか.
 	bool useKeyboard = false;	//キーボードを使用するか.
 	bool useGamepad = false;	//ゲームパッドを使用するか.
@@ -26,15 +28,11 @@ struct Game {
 class Select  {
 private:
 	//方向の定義.
-	enum Direction {
-		up,
-		down,
-		left,
-		right,
-		none
-	};
 	
+
+	MyTimer leaveTime;//放置時間をカウント.
 	FontMgr& fontMgr = FontMgr::GetInstance();
+	MyInput& input = MyInput::GetInstance();
 	const FilePath homeDirectory = FileSystem::CurrentDirectory();//ホームディレクトリ格納.
 # pragma region プレビューエリア系変数
 	Texture noImage;
@@ -58,7 +56,7 @@ private:
 #pragma region タブ関連
 	const Font font{ FontMethod::MSDF, 48, Typeface::Heavy };
 	Array<String> items = {};
-	Array<int32> years = {};
+	Array<String> years = {};
 	ColorF TabColor{ 0.2, 0.5, 0.9 };
 	ColorF TabOutlineColor{ 0.5 };
 	ColorF ContentColor{ 0.5 };
@@ -66,8 +64,12 @@ private:
 #pragma endregion
 	
 	int32 selectIndex = 0;	//選択しているタイルのインデックス.
+	int32 yearIndex = 0;
 	RectF descArea;				//説明エリア.
-
+	RectF titleArea;				//タイトルエリア.
+	RectF staffArea;				//スタッフエリア.
+	RectF toolArea;				//ツールエリア.
+	RectF yearArea;				//制作年度エリア.
 	Array<Game> games;		//ゲームのリスト.
 	Array<Game> selectedGames;	//優先度でソートしたゲームのリスト.
 	Array<Game>* nowGameList;//今使っているゲームリストのポインタ.
@@ -78,6 +80,8 @@ private:
 	bool canInput;//入力可能か.
 	bool isPlay;//ゲーム中か.
 	bool isAnim;//アニメーション.
+	bool leave;//放置中かどうか.
+
 
 	Optional<ChildProcess> process;//実行中のゲームプロセス.
 public:
@@ -106,4 +110,8 @@ public:
 	
 	Array<Game>LoadGames();
 	bool IsURL(StringView path);
+
+	void Leave();//放置していたら基本画面に戻る、また音楽を止める.
+	void RestoreWindow();//放置状態から復帰する.
+	void RestoreAudio();//放置状態から復帰する.
 };

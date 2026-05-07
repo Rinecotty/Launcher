@@ -116,9 +116,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Back.cpp" />
     <ClCompile Include="BaseScene.cpp" />
     <ClCompile Include="FontMgr.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MyInput.cpp" />
     <ClCompile Include="Select.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -331,10 +333,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Back.h" />
     <ClInclude Include="Base.h" />
     <ClInclude Include="BaseScene.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="FontMgr.h" />
+    <ClInclude Include="MyInput.h" />
     <ClInclude Include="myTest.h" />
     <ClInclude Include="Select.h" />
     <ClInclude Include="stdafx.h" />
