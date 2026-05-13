@@ -1,5 +1,6 @@
 ﻿#pragma once
-#define SCALE (1)//後でここに実行時の画面サイズ/ 開発環境の画面サイズしたものを入れて比率調整をする.
+//#define SCALE (1)//後でここに実行時の画面サイズ/ 開発環境の画面サイズしたものを入れて比率調整をする.
+inline double SCALE = 1.0;
 enum Direction {
 	up,
 	down,
