@@ -36,6 +36,7 @@ private:
 	const FilePath homeDirectory = FileSystem::CurrentDirectory();//ホームディレクトリ格納.
 # pragma region プレビューエリア系変数
 	Texture noImage;
+	Texture back;//プレビューエリアの背景テクスチャ.
 	Array<Texture> prevArea;
 	int32 prevCnt;//プレビューエリアの数.
 	Vec2 prevPos;//プレビューアイコンの真ん中の座標.

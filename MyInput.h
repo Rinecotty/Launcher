@@ -18,6 +18,7 @@ public:
 		return instance;
 	}
 	bool IsPressed(Action type);//Actionの中からどのキーが押された瞬間かを返す関数.
+	bool IsAnyPadInput();//ゲームパッドの入力があったかどうか.
 	void Update();
 };
 

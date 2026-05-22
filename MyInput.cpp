@@ -111,3 +111,26 @@ bool MyInput::IsPressed(Action type) {
 	}
 	return false;
 }
+
+bool MyInput::IsAnyPadInput() {
+	for (int i = 0; i < 4; i++) {
+		const auto& pad = XInput(i);
+		if (!pad.isConnected()) continue;
+		if (pad.buttonA.down() || pad.buttonB.down() || pad.buttonX.down() || pad.buttonY.down() || pad.buttonMenu.down()
+			|| pad.buttonLB.down() || pad.buttonRB.down()
+			|| pad.buttonY.down()
+			) {
+			return true;
+		}
+		double padX = pad.leftThumbX;
+		double padY = pad.leftThumbY;
+		double threshold = 0.5;//傾きの閾値、これ以上傾いてたら入力とみなす.
+		// 小さい入力は無視
+		if (Abs(padX) < threshold) padX = 0;
+		if (Abs(padY) < threshold) padY = 0;
+		if (padX != 0 || padY != 0) {
+			return true;
+		}
+	}
+	return false;
+}

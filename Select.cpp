@@ -42,7 +42,7 @@ void Select::SelectInit() {
 	movPos = Vec2(750, 100);//動画の表示位置代入.
 	movSize = Vec2(1200, 675);//動画の表示サイズ代入.
 	descPos = Vec2(750, 800);//説明文の表示位置代入.
-	descSize = Vec2(1000, 350);//説明文の表示サイズ代入.
+	descSize = Vec2(1100, 350);//説明文の表示サイズ代入.
 	Load();
 	LoadPrev();
 	SetRectSize();
@@ -89,7 +89,15 @@ void Select::Load() {
 	Print << homeDirectory;
 #endif
 	const FilePath noImgPath = U"data/image/NoImage.png";
-	noImage = Texture{ noImgPath };//動画等が無かった時の画像読み込み.	
+	const FilePath backPath = U"data/image/haikei2.png";
+	if (FileSystem::Exists(noImgPath) == false) {
+		System::MessageBoxOK(U"{} が見つかりませんでした。"_fmt(noImgPath));
+	}
+	if (FileSystem::Exists(backPath) == false) {
+		System::MessageBoxOK(U"{} が見つかりませんでした。"_fmt(backPath));
+	}
+	noImage = Texture{ noImgPath };//動画等が無かった時の画像読み込み.
+	back = Texture{ backPath };//背景画像読み込み.
 	LoadGames();//ゲーム読み込み.
 	items << U"All";
 	years << U"All";
@@ -179,15 +187,15 @@ void Select::Update() {
 	input.Update();
 	const Array<Input> keys = Keyboard::GetAllInputs();
 	//何らかの入力があったら.
-	if (!keys.isEmpty()) {
+	if (!keys.isEmpty() || input.IsAnyPadInput()) {
 		leaveTime.Reset();//放置時間リセット.
 		if (leave) {
 			RestoreAudio();
 		}
 	}
-	Leave();
+	//Leave();
 
-	if (input.IsPressed(Action::Decide)) {
+	if (input.IsPressed(Action::Decide) && !isPlay) {
 		PlayGame();
 	}
 	if (process)
@@ -205,11 +213,16 @@ void Select::Update() {
 			Window::Restore();
 			process.reset();
 			if (isPlay) {
+				leaveTime.Reset();//放置時間リセット.
+				if (leave) {
+					RestoreAudio();
+				}
 				isPlay = false;
 				audio.play();
 			} 
 		}
 	}
+	if (isPlay) return;//プレイフラグがONならこれ以上処理しない.
 	if ((*nowGameList).empty()) return;
 
 	if (!canInput) {
@@ -218,12 +231,12 @@ void Select::Update() {
 			canInput = true;
 		}
 	}
-	if (input.IsPressed(Action::Up) && canInput) {
+	if (input.IsPressed(Action::Up) && canInput && !isAnim) {
 		canInput = false;
 		Anim(Direction::up, 0.5);
 		next = Direction::up;
 	}
-	if (input.IsPressed(Action::Down) && canInput) {
+	if (input.IsPressed(Action::Down) && canInput && !isAnim) {
 		canInput = false;
 		Anim(Direction::down, 0.5);
 		next = Direction::down;
@@ -262,6 +275,7 @@ void Select::Update() {
 }
 void Select::Draw() {
 	//yearArea.rounded(40, 40, 40, 40).draw();
+	back.resized(Scene::Size()).draw(0, 0);
 	tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
 	descArea.rounded(40, 0, 40, 0).draw();
 	titleArea.rounded(40, 40, 40, 40).draw();
@@ -310,9 +324,9 @@ void Select::DrawPrev() {
 	fontMgr.GetFont()(U"タイトル").draw(titleArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	fontMgr.GetFont()(U"制作メンバー").draw(staffArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	fontMgr.GetFont()(U"制作ツール").draw(toolArea.stretched(-10 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
-	fontMgr.GetFont()((*nowGameList)[selectIndex].title).draw(titleArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
-	fontMgr.GetFont()((*nowGameList)[selectIndex].staff).draw(staffArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
-	fontMgr.GetFont()((*nowGameList)[selectIndex].tools).draw(toolArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont2()((*nowGameList)[selectIndex].title).draw(titleArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont2()((*nowGameList)[selectIndex].staff).draw(staffArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	fontMgr.GetFont2()((*nowGameList)[selectIndex].tools).draw(toolArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	PlayMov();//動画を再生.
 }
 

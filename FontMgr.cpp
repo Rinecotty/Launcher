@@ -5,6 +5,7 @@ FontMgr::FontMgr() {
 }
 void FontMgr::Load() {
 	font = { FontMethod::MSDF, 48,fontPath};
+	font2 = { FontMethod::MSDF, 24,fontPath };
 }
 FontMgr& FontMgr::GetInstance() {
 	static FontMgr instance;
@@ -12,4 +13,8 @@ FontMgr& FontMgr::GetInstance() {
 }
 const Font& FontMgr::GetFont() const{
 	return font;
+}
+
+const Font& FontMgr::GetFont2() const {
+	return font2;
 }

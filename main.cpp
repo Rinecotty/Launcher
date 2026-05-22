@@ -15,6 +15,8 @@ void Main()
 	while (System::Update()) {
 		select.Update();
 		select.Draw();
+#if _DEBUG
 		fontMgr.GetFont()(Profiler::FPS()).drawAt(Vec2{ 1800 * SCALE,1100 * SCALE }, ColorF{ 0.2 });
+#endif
 	}
 }
