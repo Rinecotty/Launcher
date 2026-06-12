@@ -341,65 +341,67 @@ public:
 	}
 };
 
-class MyTab : public ITab
-{
-public:
-
-	MyTab(const SizeF& tabSize, const Array<String>& items)
-		: ITab{ tabSize, items } {
-	}
-
-	void draw(const Vec2& pos, const Font& font, const ColorF& color, const ColorF& outlineColor) const override
-	{
-		constexpr double Thickness = 3.0;
-		const double shear = (m_tabSize.y * 0.2);
-		const double radius = (m_tabSize.y * 0.5);
-
-		size_t size = m_items.size();
-		bool isOverflow = (size >= 5);
-		if (size >= 5) { size = 5; }
-		const double width = ((size - 1) * (m_tabSize.x - Thickness) + m_tabSize.x);
-
-		RectF{ pos.x, pos.y + 3, width, m_tabSize.y - 6 }.stretched(-Thickness * 0.5).rounded(radius).drawFrame(Thickness, outlineColor);
-		if (!isOverflow)
-		{
-			for (size_t i = 0; i < m_items.size(); ++i)
-			{
-				const RectF tab = RectF{ (pos.x + i * (m_tabSize.x - Thickness)), pos.y, m_tabSize.x, m_tabSize.y };
-
-				if (i == m_activeIndex)
-				{
-					if (i == 0) // ⊂
-					{
-						tab.stretched(0, -shear, 0, 0).rounded(radius, 0, 0, radius).draw(color);
-						Triangle{ tab.tr().movedBy(-shear, 0),  tab.tr().movedBy(shear, 0), tab.br().movedBy(-shear, 0) }.draw(color);
-					}
-					else if (i == (m_items.size() - 1)) // ⊃
-					{
-						Triangle{ tab.tl().movedBy(shear, 0), tab.bl().movedBy(shear, 0), tab.bl().movedBy(-shear, 0) }.draw(color);
-						tab.stretched(0, 0, 0, -shear).rounded(0, radius, radius, 0).draw(color);
-					}
-					else // □
-					{
-						tab.shearedX(shear).draw(color);
-					}
-				}
-			}
-		}
-		else
-		{
-
-		}
-
-		for (size_t i = 0; i < m_items.size(); ++i)
-		{
-			const RectF tab{ (pos.x + i * (m_tabSize.x - Thickness)), pos.y, m_tabSize };
-
-			// 文字を傾かせる
-			const Transformer2D tr{ Mat3x2::ShearX(0.35).translated(tab.center()) };
-
-			font(m_items[i]).drawAt(TextStyle::Shadow(Vec2{ 2.5, 2.5 }, ColorF{ 0.0, 0.6 }), 20, Vec2{ 0, 0 });
-		}
-	}
-};
-
+//class MyTab : public ITab
+//{
+//public:
+//	const size_t vidibleCount = 5;//	タブ数上限.
+//
+//	const size_t startIndex;
+//	MyTab(const SizeF& tabSize, const Array<String>& items)
+//		: ITab{ tabSize, items } {
+//	}
+//
+//	void draw(const Vec2& pos, const Font& font, const ColorF& color, const ColorF& outlineColor) const override
+//	{
+//		constexpr double Thickness = 3.0;
+//		const double shear = (m_tabSize.y * 0.2);
+//		const double radius = (m_tabSize.y * 0.5);
+//
+//		size_t size = m_items.size();
+//		bool isOverflow = (size >= 5);
+//		if (size >= 5) { size = 5; }
+//		const double width = ((size - 1) * (m_tabSize.x - Thickness) + m_tabSize.x);
+//
+//		RectF{ pos.x, pos.y + 3, width, m_tabSize.y - 6 }.stretched(-Thickness * 0.5).rounded(radius).drawFrame(Thickness, outlineColor);
+//		if (!isOverflow)
+//		{
+//			for (size_t i = 0; i < m_items.size(); ++i)
+//			{
+//				const RectF tab = RectF{ (pos.x + i * (m_tabSize.x - Thickness)), pos.y, m_tabSize.x, m_tabSize.y };
+//
+//				if (i == m_activeIndex)
+//				{
+//					if (i == 0) // ⊂
+//					{
+//						tab.stretched(0, -shear, 0, 0).rounded(radius, 0, 0, radius).draw(color);
+//						Triangle{ tab.tr().movedBy(-shear, 0),  tab.tr().movedBy(shear, 0), tab.br().movedBy(-shear, 0) }.draw(color);
+//					}
+//					else if (i == (m_items.size() - 1)) // ⊃
+//					{
+//						Triangle{ tab.tl().movedBy(shear, 0), tab.bl().movedBy(shear, 0), tab.bl().movedBy(-shear, 0) }.draw(color);
+//						tab.stretched(0, 0, 0, -shear).rounded(0, radius, radius, 0).draw(color);
+//					}
+//					else // □
+//					{
+//						tab.shearedX(shear).draw(color);
+//					}
+//				}
+//			}
+//		}
+//		else
+//		{
+//
+//		}
+//
+//		for (size_t i = 0; i < m_items.size(); ++i)
+//		{
+//			const RectF tab{ (pos.x + i * (m_tabSize.x - Thickness)), pos.y, m_tabSize };
+//
+//			// 文字を傾かせる
+//			const Transformer2D tr{ Mat3x2::ShearX(0.35).translated(tab.center()) };
+//
+//			font(m_items[i]).drawAt(TextStyle::Shadow(Vec2{ 2.5, 2.5 }, ColorF{ 0.0, 0.6 }), 20, Vec2{ 0, 0 });
+//		}
+//	}
+//};
+//
