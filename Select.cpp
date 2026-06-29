@@ -103,7 +103,7 @@ void Select::Load() {
 	years << U"All";
 	InitGenre();//ジャンルの初期化.
 	InitYear();//年度の初期化.
-	tab = TabE{ Size{ 160, 50 }, items};
+	//tab = TabE{ Size{ 160, 50 }, items};
 }
 void Select::LoadSortGames() {
 	int selectedTab = tab.getActiveTabIndex();
@@ -241,7 +241,7 @@ void Select::Update() {
 		Anim(Direction::down, 0.5);
 		next = Direction::down;
 	}
-	if (input.IsPressed(Action::Left))
+	/*if (input.IsPressed(Action::Left))
 	{
 		tab.advance(-1);
 		LoadSortGames();
@@ -250,7 +250,7 @@ void Select::Update() {
 	{
 		tab.advance(+1);
 		LoadSortGames();
-	}
+	}*/
 	if (input.IsPressed(Action::Sort)) {
 		yearIndex = (yearIndex + 1) % years.size();
 #if _DEBUG
@@ -276,7 +276,7 @@ void Select::Update() {
 void Select::Draw() {
 	//yearArea.rounded(40, 40, 40, 40).draw();
 	back.resized(Scene::Size()).draw(0, 0);
-	tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
+	//tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
 	descArea.rounded(40, 0, 40, 0).draw();
 	titleArea.rounded(40, 40, 40, 40).draw();
 	staffArea.rounded(40, 40, 40, 40).draw();
