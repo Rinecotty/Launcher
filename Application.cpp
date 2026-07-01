@@ -16,6 +16,8 @@ void App::LoadAppInfo() {
 		tmp.write(U"Window", U"height", 1200);
 		tmp.write(U"Window", U"Fullscreen", 1);//0がfalseで1がtrue.
 		tmp.write(U"Window", U"Fra1eless", 0);
+		tmp.write(U"Config", U"AppLeaveTime",30);
+		tmp.write(U"Config", U"AudioLeaveTime",30);
 		tmp.save(U"config.ini");
 		System::MessageBoxOK(FileSystem::CurrentDirectory() + U"\n内にアプリケーション設定ファイル`config.ini`が見つかりませんでした。\nデフォルト値で作成しました");
 		LoadAppInfo();//もう一度読み込む.
@@ -27,7 +29,9 @@ void App::LoadAppInfo() {
 		UI::FullScreen = appini.get<int32>(U"Window.Fullscreen") != 0;//0以外ならtrue.
 		//フレームを表示するかどうか.
 		UI::Frameless = appini.get<int32>(U"Window.Frameless") != 0;
-		SCALE = Min((double)1920 / UI::WindowSize.x, (double)1200 / UI::WindowSize.y);//SCALEをウィンドウサイズに合わせて調整.	
+		UI::AppLeaveTime = Parse<int32>(appini[U"Config.AppLeaveTime"]);
+		UI::AudioLeaveTime = Parse<int32>(appini[U"Config.AudioLeaveTime"]);
+		SCALE = Min(UI::WindowSize.x / (double)1920  , UI::WindowSize.y/ (double)1200);//SCALEをウィンドウサイズに合わせて調整.	
 	}
 }
 void App::AppInit() {

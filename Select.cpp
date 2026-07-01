@@ -166,7 +166,7 @@ Array<Game> Select::LoadGames() {
 		}
 		
 		game.desc = ini[U"Game.desc"].replaced(U"\\n", U"\n");
-		game.staff = ini[U"Game.staff"];
+		game.staff = ini[U"Game.staff"].replaced(U"\\n", U"\n");
 		game.tools = ini[U"Game.tools"];
 		game.genre = ini.get<String>(U"Game.genre");
 		game.priority = ini.get<int32>(U"Game.priority");
@@ -193,7 +193,7 @@ void Select::Update() {
 			RestoreAudio();
 		}
 	}
-	//Leave();
+	Leave();
 
 	if (input.IsPressed(Action::Decide) && !isPlay) {
 		PlayGame();
@@ -445,13 +445,13 @@ void Select::Leave() {
 	//if (leave)return;//すでに放置中なら何もしない.
 	uint64 tmpTime = leaveTime.GetPassTime();//経過時間取得.
 	//１分経ったらかつ放置してないなら.
-	if (tmpTime > 60000000 && !leave) {
+	if (tmpTime > UI::AudioLeaveTime * 1000000 && !leave) {
 		//音楽止める.
 		audio.stop();
 		leave = true;
 	}
 	//3分経ったらかつプロセスが実行中なら.
-	if (tmpTime > 60000000) {
+	if (tmpTime > UI::AppLeaveTime * 1000000) {
 		if (process) {
 			process->terminate();//ゲームを強制終了.
 			process.reset();

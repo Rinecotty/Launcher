@@ -19,19 +19,14 @@ void MyInput::InputInit() {
 void MyInput::Update() {
 	auto controller = XInput(0);
 	if (controller.buttonA.down()) {
-		Print << U"Button A is pressed.";
 	}
 	if (controller.buttonB.down()) {
-		Print << U"Button B is pressed.";
 	}
 	if (controller.buttonX.down()) {
-		Print << U"Button X is pressed.";
 	}
 	if (controller.buttonY.down()) {
-		Print << U"Button Y is pressed.";
 	}
 	if (controller.buttonMenu.down()) {
-		Print << U"Button Menu is pressed.";
 	}
 }
 
@@ -48,10 +43,10 @@ bool MyInput::IsPressed(Action type) {
 	bool btPressed = false;//パッドのボタンが押された瞬間かどうか.
 	//ゲームパッドの入力を確認、(XInputの仕様で最大４台).
 	for (int i = 0; i < 4; i++) {
-		const auto& pad = XInput(i);
+		const auto& pad = Gamepad(i);
 		if (!pad.isConnected()) continue;
-		double padX = pad.leftThumbX;
-		double padY = pad.leftThumbY;
+		double padX = pad.axes[0];
+		double padY = pad.axes[1];
 		double threshold = 0.5;//傾きの閾値、これ以上傾いてたら入力とみなす.
 
 		// 小さい入力は無視
@@ -62,25 +57,25 @@ bool MyInput::IsPressed(Action type) {
 		bool horizontalPriority = Abs(padX) > Abs(padY);
 		switch (type) {
 		case Action::Up:
-			if (pad.buttonUp.down()) {
+			if (pad.buttons[0].down()) {
 				btPressed = true;
 			}
-			current = !horizontalPriority && (padY > threshold);//上に傾いているかどうか.
+			current = !horizontalPriority && (padY > -threshold);//上に傾いているかどうか.
 			padPressed = current && !padState[type];//現在傾いていて、前フレームでは傾いていなかったら押された瞬間とみなす.
 			padState[type] = current;//状態を更新.
 			if (btPressed || padPressed) return true;
 			break;
 		case Action::Down:
-			if (pad.buttonDown.down()) {
+			if (pad.buttons[1].down()) {
 				btPressed = true;
 			}
-			current = !horizontalPriority && (padY < -threshold);//下に傾いているかどうか.
+			current = !horizontalPriority && (padY < threshold);//下に傾いているかどうか.
 			padPressed = current && !padState[type];//現在傾いていて、前フレームでは傾いていなかったら押された瞬間とみなす.
 			padState[type] = current;//状態を更新.
 			if (btPressed || padPressed) return true;
 			break;
 		case Action::Left:
-			if (pad.buttonLeft.down()) {
+			if (pad.buttons[2].down()) {
 				btPressed = true;
 			}
 			current = horizontalPriority && (padX < -threshold);//左に傾いているかどうか.
@@ -89,7 +84,7 @@ bool MyInput::IsPressed(Action type) {
 			if (btPressed || padPressed) return true;
 			break;
 		case Action::Right:
-			if (pad.buttonRight.down()) {
+			if (pad.buttons[3].down()) {
 				btPressed = true;
 			}
 			current = horizontalPriority && (padX > threshold);//左に傾いているかどうか.
@@ -98,12 +93,13 @@ bool MyInput::IsPressed(Action type) {
 			if (btPressed || padPressed) return true;
 			break;
 		case Action::Decide:
-			if (pad.buttonA.down()) {
+			if (
+				pad.buttons[9].down()) {
 				return true;
 			}
 			break;
 		case Action::Sort:
-			if (pad.buttonMenu.down()) {
+			if (pad.buttons[5].down()) {
 				return true;
 			}
 			break;
@@ -114,16 +110,25 @@ bool MyInput::IsPressed(Action type) {
 
 bool MyInput::IsAnyPadInput() {
 	for (int i = 0; i < 4; i++) {
-		const auto& pad = XInput(i);
+		const auto& pad = Gamepad(i);
 		if (!pad.isConnected()) continue;
-		if (pad.buttonA.down() || pad.buttonB.down() || pad.buttonX.down() || pad.buttonY.down() || pad.buttonMenu.down()
+		const auto& info = pad.getInfo();
+		/*if (Indexed(pad.buttons)
+			|| pad.buttonB.down() || pad.buttonX.down() || pad.buttonY.down() || pad.buttonMenu.down()
 			|| pad.buttonLB.down() || pad.buttonRB.down()
 			|| pad.buttonY.down()
 			) {
 			return true;
+		}*/
+		for (auto&& [i, button] : Indexed(pad.buttons))
+		{
+			if (button.pressed()) {
+				return true;
+			}
 		}
-		double padX = pad.leftThumbX;
-		double padY = pad.leftThumbY;
+
+		double padX = pad.axes[0];
+		double padY = pad.axes[1];
 		double threshold = 0.5;//傾きの閾値、これ以上傾いてたら入力とみなす.
 		// 小さい入力は無視
 		if (Abs(padX) < threshold) padX = 0;

@@ -18,6 +18,8 @@ namespace UI {
 	inline Size WindowSize{ 1920,1200 };//ウィンドウサイズ.
 	inline bool FullScreen = true;//フルスクリーンかどうか.
 	inline bool Frameless = false;//ウィンドウのフレーム表示するか.
+	inline int32 AppLeaveTime = 30;//何秒放置でアプリを離れるか.
+	inline int32 AudioLeaveTime = 30;//何秒放置で音を切るか.
 }
 
 //アプリケーション設定用のクラス.
