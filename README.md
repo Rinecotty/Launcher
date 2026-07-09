@@ -2,11 +2,13 @@
 
 学校のゲーム展示用に開発したゲームランチャーです。ゲーム情報をINIファイルで管理することで、新しいゲームをソースコードを変更せずに追加できる設計を採用しています。
 
+# 展示の様子
+![ゲーム展示筐体](images/IMG_4324.JPEG)
 ---
 
 ## プレビュー動画
 
-[![ゲームプレイ動画](https://img.youtube.com/vi/IACK7Nox_8k/0.jpg)](https://youtu.be/IACK7Nox_8k)
+[![ゲーム選択画面](https://img.youtube.com/vi/IACK7Nox_8k/0.jpg)](https://youtu.be/IACK7Nox_8k)
 
 ---
 
