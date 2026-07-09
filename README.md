@@ -1,6 +1,6 @@
 # ゲームランチャー
 ## プレビュー動画(クリックして動画を再生)
-[![ゲームプレイ動画](https://img.youtube.com/vi/eOCzwHx4i4o/0.jpg)](https://youtu.be/eOCzwHx4i4o)
+[![ゲームプレイ動画](https://img.youtube.com/vi/IACK7Nox_8k/0.jpg)](https://youtu.be/IACK7Nox_8k)
 ## 概要
 ### 制作のきっかけ
 - 学校の筐体に入れてゲームを展示できるランチャーを作成しようと思い立ったから
