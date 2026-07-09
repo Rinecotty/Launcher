@@ -40,7 +40,7 @@ void Select::SelectInit() {
 	leaveTime.Start();
 	prevPos = Vec2(150, 600);//プレビューエリアの座標代入.
 	movPos = Vec2(750, 100);//動画の表示位置代入.
-	movSize = Vec2(1200, 675);//動画の表示サイズ代入.
+	movSize = Vec2(1100, 700);//動画の表示サイズ代入.
 	descPos = Vec2(750, 800);//説明文の表示位置代入.
 	descSize = Vec2(1100, 350);//説明文の表示サイズ代入.
 	Load();
@@ -103,7 +103,9 @@ void Select::Load() {
 	years << U"All";
 	InitGenre();//ジャンルの初期化.
 	InitYear();//年度の初期化.
-	//tab = TabE{ Size{ 160, 50 }, items};
+#if defined TAB
+	tab = TabE{ Size{ 160, 50 }, items};
+#endif
 }
 void Select::LoadSortGames() {
 	int selectedTab = tab.getActiveTabIndex();
@@ -241,7 +243,8 @@ void Select::Update() {
 		Anim(Direction::down, 0.5);
 		next = Direction::down;
 	}
-	/*if (input.IsPressed(Action::Left))
+#if defined TAB
+	if (input.IsPressed(Action::Left))
 	{
 		tab.advance(-1);
 		LoadSortGames();
@@ -250,7 +253,8 @@ void Select::Update() {
 	{
 		tab.advance(+1);
 		LoadSortGames();
-	}*/
+	}
+#endif
 	if (input.IsPressed(Action::Sort)) {
 		yearIndex = (yearIndex + 1) % years.size();
 #if _DEBUG
@@ -276,13 +280,16 @@ void Select::Update() {
 void Select::Draw() {
 	//yearArea.rounded(40, 40, 40, 40).draw();
 	back.resized(Scene::Size()).draw(0, 0);
-	//tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
+#if defined TAB
+	tab.draw(Vec2{ 300, 40 }, fontMgr.GetFont(), TabColor, TabOutlineColor);
+#endif
 	descArea.rounded(40, 0, 40, 0).draw();
 	titleArea.rounded(40, 40, 40, 40).draw();
 	staffArea.rounded(40, 40, 40, 40).draw();
 	toolArea.rounded(40, 40, 40, 40).draw();
 	fontMgr.GetFont()((*nowGameList)[selectIndex].desc).draw(descArea.stretched(-80 * SCALE, -30 * SCALE, -20 * SCALE, -30 * SCALE), Palette::Black);
 	DrawPrev();//プレビューを表示.
+	
 	//Print << items;
 }
 void Select::LoadPrev() {
@@ -327,6 +334,7 @@ void Select::DrawPrev() {
 	fontMgr.GetFont2()((*nowGameList)[selectIndex].title).draw(titleArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	fontMgr.GetFont2()((*nowGameList)[selectIndex].staff).draw(staffArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
 	fontMgr.GetFont2()((*nowGameList)[selectIndex].tools).draw(toolArea.stretched(-80 * SCALE,-10 * SCALE,0 * SCALE,-10 * SCALE), Palette::Black);
+	Triangle(10, UI::WindowSize.y / 2 - 40, 50, UI::WindowSize.y / 2, 10, UI::WindowSize.y / 2 + 40).draw(Palette::Orange);
 	PlayMov();//動画を再生.
 }
 

@@ -55,6 +55,7 @@ private:
 	double animDuration;//セレクトアニメーション遷移時間.
 #pragma endregion
 #pragma region タブ関連
+#if defined TAB
 	const Font font{ FontMethod::MSDF, 48, Typeface::Heavy };
 	Array<String> items = {};
 	Array<String> years = {};
@@ -62,6 +63,7 @@ private:
 	ColorF TabOutlineColor{ 0.5 };
 	ColorF ContentColor{ 0.5 };
 	TabE tab{ Size{ 160, 50 }, items };
+#endif
 #pragma endregion
 	
 	int32 selectIndex = 0;	//選択しているタイルのインデックス.
