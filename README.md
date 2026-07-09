@@ -6,6 +6,7 @@
 <p align="center">
   <img src="images/IMG_4324.JPEG" alt="展示筐体" width="650">
 </p>
+
 ---
 
 ## プレビュー動画
