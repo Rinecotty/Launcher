@@ -1,5 +1,5 @@
 # ゲームランチャー
-## プレビュー動画(クリック動画)
+## プレビュー動画(クリックして動画を再生)
 [![ゲームプレイ動画](https://img.youtube.com/vi/eOCzwHx4i4o/0.jpg)](https://youtu.be/eOCzwHx4i4o)
 ## 概要
 ### 制作のきっかけ
